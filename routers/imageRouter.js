@@ -2,6 +2,7 @@ const { Router } = require("express");
 const Image = require("../models").image;
 const { toJWT, toData } = require("../auth/jwt");
 const router = new Router();
+const authMiddleware = require("../auth/middleware")
 
 
 // router.get("/", async (req, res, next) => {
@@ -49,20 +50,12 @@ router.get("/:imageId", async (req, res, next) => {
 // });
 
 
-  router.get("/", async (req, res, next) => {
-    const auth = req.headers.authorization && req.headers.authorization.split(" ");
-    if (auth && auth[0] === "Bearer" && auth[1]) {
-      try {
-        const data = toData(auth[1]);
-      } catch (e) {
-        res.status(400).send("Invalid JWT token");
-      }
+router.get("/", authMiddleware, async (req, res, next) => {
+    try {
       const allImages = await Image.findAll();
       res.json(allImages);
-    } else {
-      res.status(401).send({
-        message: "Please supply some valid credentials",
-      });
+    } catch (e) {
+      next(e);
     }
   });
 

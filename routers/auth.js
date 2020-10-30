@@ -3,6 +3,14 @@ const { toJWT, toData } = require("../auth/jwt");
 const bcrypt = require('bcrypt');
 const User = require("../models").user;
 const router = new Router()
+const authMiddleware = require("../auth/middleware")
+
+
+router.get("/test-auth", authMiddleware, (req, res) => {
+    res.send({
+      message: `Thanks for visiting the secret endpoint ${req.user.email}.`,
+    });
+  });
 
 
 router.post("/signup", async (req, res, next) => {
@@ -37,23 +45,21 @@ router.post('/login', async (req, res, next) => {
         res.status(400).send("user not found")
         return
     }
-    if(bcrypt.compareSync(password, foundUser.password)){
+    if(!bcrypt.compareSync(password, foundUser.password)){
         console.log("Found user password", foundUser.password)
         console.log("Password", password)
-        return
+        res.send("password was wrong")
 
     } else {
-        res.send("password was wrong")
-    }
-    const token = toJWT({id: foundUser.id})
+        const token = toJWT({id: foundUser.id})
     console.log("token", token)
-
 
     const checkedToken = toData(token)
     console.log("what is stored in a token", checkedToken)
 
-
     res.json({token})
+    }
+    
 })
 
 module.exports = router
