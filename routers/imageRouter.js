@@ -39,7 +39,7 @@ router.get("/:imageId", async (req, res, next) => {
 //   });
 
   router.get("/", (req, res, next) => {
-    const limit = req.query.limit || 25;
+    const limit = Math.min(req.query.limit || 25, 500);
     const offset = req.query.offset || 0;
   
     Image.findAndCountAll({ limit, offset })
